@@ -1,0 +1,15 @@
+{
+	"name": "python-alpine",
+	"dockerComposeFile": ["../../docker-compose.yaml"],
+	"service": "container-1",
+	"workspaceFolder": "/src",
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"donjayamanne.python-extension-pack",
+				"ms-python.debugpy"
+			]
+		}
+	}
+}

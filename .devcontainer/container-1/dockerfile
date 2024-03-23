@@ -1,0 +1,13 @@
+FROM python:alpine3.19
+
+COPY requirements.txt .
+
+RUN apk update && apk upgrade
+
+RUN pip install -r requirements.txt
+
+WORKDIR /src
+
+# ADD container-1-src /src
+
+# ENTRYPOINT ["python3", "main.py"]

@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  container-1:
+    build:
+      context: ./.devcontainer/container-1/
+      dockerfile: dockerfile
+    volumes:
+    - ./.devcontainer/container-1/container-1-src:/src
+    command: sleep infinity
