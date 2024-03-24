@@ -1,3 +1,0 @@
-url: http://192.168.178.151:9100/remote.php/dav/principals/users/test
-username: test
-password: i6CeL-Cndj6-5ksed-wP9D8-DmYGH
