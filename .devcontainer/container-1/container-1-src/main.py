@@ -1,10 +1,11 @@
 import sqlite3
 from sqlite3 import Error
-from test import get_events
+from test import get_events, push_events, get_calendar_url
 
 def main():
  db = db_init(':memory:')
- get_events()
+ get_calendar_url()
+ 
  
  
  
