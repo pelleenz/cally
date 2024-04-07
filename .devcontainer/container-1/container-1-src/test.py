@@ -1,6 +1,7 @@
 import caldav
 from caldav import Calendar
 from datetime import datetime
+from icalevents.icalevents import events
 
 CALDAV_URL = "http://192.168.178.151:9100/remote.php/dav/principals/users/test"
 USERNAME = "test"
@@ -35,4 +36,10 @@ def push_events():
     rrule={"FREQ": "YEARLY"},
     )
     
+    print(event)
+    
+def ical_get_events():
+  es = events()
+  
+  for event in es:
     print(event)
