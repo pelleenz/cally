@@ -7,7 +7,7 @@ bin-release/
 # Other files and folders
 .devcontainer/container-1/container-1-src/database/__pycache__
 .devcontainer/container-1/container-1-src/__pycache__
-cally.ini
+cally.env
 
 # Executables
 *.swf
