@@ -3,36 +3,56 @@ import time
 from icalendar import Event
 from datetime import datetime
 from icalevents.icalevents import events as ical_event
-import pytz
-
-ical_file_path = "https://calendar.google.com/calendar/ical/pelleenz1999%40gmail.com/private-808f6e43ef80428f34e72d456a630606/basic.ics"
-caldav_url = "http://192.168.178.151:9100/remote.php/dav/principals/users/test"
-username = "test"
-password = "i6CeL-Cndj6-5ksed-wP9D8-DmYGH"
-target_cal = "casdfasd"
-prefix = "THW// "
-
+import configparser
+import logging
+import sys
 
 def main():
+  logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+  logging.basicConfig(stream=sys.stderr, level=logging.ERROR)
+  config = config_parser({})
   while True:
-    ical_events = ical_loader(ical_file_path)
-    client = caldav_conn(caldav_url, username, password)
-    calendar = cal_finder(client)
-    caldav_parser(ical_events, calendar)
+    ical_events = ical_loader(config["ical_file_path"])
+    client = caldav_conn(config["caldav_url"], config["username"], config["password"])
+    calendar = cal_finder(client, config)
+    caldav_parser(ical_events, calendar, config)
     time.sleep(60)
 
+def config_parser(args, path = "./"):
+  try:
+      parse = configparser.RawConfigParser()
+      if path[-4:] == ".ini":
+        parse.read(path)
+      elif path[-1] == "/":
+        parse.read(path + "cally.ini")
+      else:
+        parse.read(path + "/cally.ini")
+  except:
+    e = "Config file could not be read"
+    logging.error(e)
+    raise(e)
+      
+  args['ical_file_path'] = parse.get("Main", 'ical_file_path')
+  args['caldav_url'] = parse.get("Main", 'caldav_url')
+  args['username'] = parse.get("Main", 'username')
+  args['password'] = parse.get("Main", 'password')
+  args['target_cal'] = parse.get("Main", 'target_cal')
+  args['prefix'] = parse.get("Main", 'prefix')
+    
+  return(args)
 
 def caldav_conn(caldav_url, username, password):
   client = caldav.DAVClient(url=caldav_url, username=username, password=password)
+  logging.info("Connection to CalDAV Server established")
   return client
 
 def ical_loader(ical_file_path):
   ical_events = ical_event(ical_file_path)
   return ical_events
 
-def caldav_parser(ical_events, calendar):
+def caldav_parser(ical_events, calendar, config):
   for event in ical_events:
-        event_summary = str(prefix + event.summary)
+        event_summary = str(config["prefix"] + " " + event.summary)
         event_start = event.start
         event_end = event.end
         
@@ -40,17 +60,19 @@ def caldav_parser(ical_events, calendar):
         
         if duplicate is False:        
           calendar.add_event(summary=event_summary, dtstart=event_start, dtend=event_end)
-          print(f"Event {event_summary} added to Calendar")
+          logging.info(f"Event {event_summary} added to Calendar")
         
-        print(f"Duplicate found, Event {event_summary} not added")
+        logging.info(f"Duplicate found, Event {event_summary} not added")
         
-def cal_finder(client):
+def cal_finder(client, config):
   principal = client.principal()
   calendars = principal.calendars()
   for calendar in calendars:
-    if str(calendar) != target_cal:
-      raise Exception("Calender not found on the server.")
-    return calendar
+    if str(calendar) == config["target_cal"]:
+      return calendar
+    
+  logging.error(f"Calendar {str(calendar)} not found")
+  raise Exception("Calender not found on the server.")
 
 def duplicate_check (calendar, event_summary, event_start, event_end):
   events_in_range = calendar.events()
@@ -63,17 +85,12 @@ def duplicate_check (calendar, event_summary, event_start, event_end):
       if ':' in sub: 
         res.append(map(str.strip, sub.split(':', 1))) 
     res = dict(res)
-    print(event_summary)
-    print(res.get('SUMMARY'))
-    print("___")
-    print(convert_datetime_format(event_start))
-    print(res.get('DTSTART;TZID=CEST;VALUE=DATE-TIME'))
    
     if (event_summary == res.get('SUMMARY')) and \
            (convert_datetime_format(event_start) == res.get('DTSTART;TZID=CEST;VALUE=DATE-TIME')) and \
            (convert_datetime_format(event_end) == res.get('DTEND;TZID=CEST;VALUE=DATE-TIME')):
             return True  # Ein Duplikat wurde gefunden
-    
+  
   return False  # Kein Duplikat gefunden
   
 def convert_datetime_format(input_datetime_str):

@@ -8,6 +8,11 @@ RUN pip install -r requirements.txt
 
 WORKDIR /src
 
+RUN ln -sf /dev/stdout /var/log/access.log \
+  ln -sf /dev/stderr /var/log/error.log
+
+CMD ["/app", "--not-logging-to-stdout"]
+
 # ADD container-1-src /src
 
 # ENTRYPOINT ["python3", "main.py"]
