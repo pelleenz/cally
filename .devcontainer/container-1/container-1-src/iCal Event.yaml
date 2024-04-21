@@ -1,0 +1,24 @@
+iCal Event
+
+event: 
+  all_day: boolean
+  attendee: string
+  categories: 
+  created: datetime.datetime
+  description: 
+  end: datetime.datetime
+  floating: boolean
+  last_modified: datetime.datetime
+  location:
+  organizer: string
+  private: boolean
+  recurrence_id: 
+  recurrence: boolean
+  sequence: integer
+  start: datetime.datetime
+  status: string
+  summary: string
+  transparent: boolean
+  uid: string
+  url:
+
