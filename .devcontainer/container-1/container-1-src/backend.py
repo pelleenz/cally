@@ -29,7 +29,7 @@ def backend():
     client = caldav_conn(caldav_url, username, password)
     calendar = cal_finder(client, target_cal)
     caldav_parser(ical_events, calendar, prefix)
-    time.sleep(60)
+    time.sleep(3600)
 
 def caldav_conn(caldav_url, username, password):
   client = caldav.DAVClient(url=caldav_url, username=username, password=password)
