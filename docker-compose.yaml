@@ -8,6 +8,5 @@ services:
     volumes:
     - ./.devcontainer/container-1/container-1-src:/src
     command: sleep infinity
-
     env_file:
       - cally.env
