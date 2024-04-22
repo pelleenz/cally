@@ -11,5 +11,13 @@
 				"ms-python.debugpy"
 			]
 		}
+	},
+	"portsAttributes": {
+		"5500": {
+			"label": "Live Server"
+		},
+		"45437": {
+			"label": "Debugger"
+		}
 	}
 }

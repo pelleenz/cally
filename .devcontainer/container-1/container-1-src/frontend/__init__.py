@@ -1,0 +1,1 @@
+print("__setup__ frontend")

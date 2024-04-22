@@ -1,48 +1,41 @@
 import caldav
 import time
+import os
 from datetime import datetime
 from icalevents.icalevents import events as ical_event
-import os
 import logging
-import sys
 
 def backend():
-  logging.basicConfig(
-    stream=sys.stdout,
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S')
-  logging.basicConfig(
-    stream=sys.stderr,
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.ERROR,
-    datefmt='%Y-%m-%d %H:%M:%S')
-  
-  ical_file_path = os.environ['ICS_PATH']
-  caldav_url = os.environ['CALDAV_URL']
-  username = os.environ['CALDAV_USER']
-  password = os.environ['CALDAV_PASS']
-  target_cal = os.environ['CALDAV_CALENDAR']
-  prefix = os.environ['CALDAV_PREFIX']
-  while True:
-    ical_events = ical_loader(ical_file_path)
-    client = caldav_conn(caldav_url, username, password)
-    calendar = cal_finder(client, target_cal)
-    caldav_parser(ical_events, calendar, prefix)
-    time.sleep(3600)
 
-def caldav_conn(caldav_url, username, password):
-  client = caldav.DAVClient(url=caldav_url, username=username, password=password)
+  environ = {}
+  environ['ical_file_path'] = os.environ['ICS_PATH']
+  environ['caldav_url'] = os.environ['CALDAV_URL']
+  environ['username'] = os.environ['CALDAV_USER']
+  environ['password'] = os.environ['CALDAV_PASS']
+  environ['target_cal'] = os.environ['CALDAV_CALENDAR']
+  environ['prefix'] = os.environ['CALDAV_PREFIX']
+
+  
+  while True:
+    ical_events = ical_loader(environ)
+    client = caldav_conn(environ)
+    calendar = cal_finder(client, environ)
+    caldav_parser(ical_events, calendar, environ)
+    time.sleep(10)
+
+def caldav_conn(environ):
+  client = caldav.DAVClient(url=environ['caldav_url'], username=environ['username'], password=environ['password'])
   logging.info("Connection to CalDAV Server established")
   return client
 
-def ical_loader(ical_file_path):
-  ical_events = ical_event(ical_file_path)
+def ical_loader(environ):
+  ical_events = ical_event(url=environ['ical_file_path'])
   return ical_events
 
-def caldav_parser(ical_events, calendar, prefix):
+def caldav_parser(ical_events, calendar, environ):
+  
   for event in ical_events:
-    event_summary = str(prefix + event.summary)
+    event_summary = str(environ['prefix'] + event.summary)
     event_start = event.start
     event_end = event.end
     event_uid = event.uid
@@ -55,11 +48,11 @@ def caldav_parser(ical_events, calendar, prefix):
     else:
       logging.info(f"Duplicate found, Event {event_summary} not added")
         
-def cal_finder(client, target_cal):
+def cal_finder(client, environ):
   principal = client.principal()
   calendars = principal.calendars()
   for calendar in calendars:
-    if str(calendar) == target_cal:
+    if str(calendar) == environ['target_cal']:
       return calendar
     
   logging.error(f"Calendar {str(calendar)} not found")
