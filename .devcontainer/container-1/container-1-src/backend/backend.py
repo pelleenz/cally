@@ -1,11 +1,12 @@
 import caldav
-import time
 import os
 from datetime import datetime
 from icalevents.icalevents import events as ical_event
 import logging
+import asyncio
 
-def backend():
+async def backend():
+  print("backend started")
 
   environ = {}
   environ['ical_file_path'] = os.environ['ICS_PATH']
@@ -17,14 +18,12 @@ def backend():
 
   
   while True:
-    ical_events = ical_loader(environ)
-    client = caldav_conn(environ)
-    calendar = cal_finder(client, environ)
-    caldav_parser(ical_events, calendar, environ)
-    time.sleep(10)
+    caldav_parser(ical_loader(environ), cal_finder(caldav_conn(environ), environ), environ)
+    print("backend")
+    await asyncio.sleep(10)
 
 def caldav_conn(environ):
-  client = caldav.DAVClient(url=environ['caldav_url'], username=environ['username'], password=environ['password'])
+  client =  caldav.DAVClient(url=environ['caldav_url'], username=environ['username'], password=environ['password'])
   logging.info("Connection to CalDAV Server established")
   return client
 
@@ -39,10 +38,10 @@ def caldav_parser(ical_events, calendar, environ):
     event_start = event.start
     event_end = event.end
     event_uid = event.uid
-  
-    duplicate = duplicate_check(calendar, event_summary, event_start, event_end, event_uid)
+    print(event_uid)
+    duplicate = duplicate_check(calendar, event_uid)
     
-    if duplicate is False:        
+    if duplicate is False:
       calendar.add_event(summary=event_summary, dtstart=event_start, dtend=event_end, uid=event_uid)
       logging.info(f"Event {event_summary} added to Calendar")
     else:
@@ -58,7 +57,7 @@ def cal_finder(client, environ):
   logging.error(f"Calendar {str(calendar)} not found")
   raise Exception("Calender not found on the server.")
 
-def duplicate_check(calendar, event_summary, event_start, event_end, event_uid):
+def duplicate_check(calendar, event_uid):
   events_in_range = calendar.events()
   
   if len(events_in_range) == 0:
@@ -73,10 +72,10 @@ def duplicate_check(calendar, event_summary, event_start, event_end, event_uid):
         res.append(map(str.strip, sub.split(':', 1))) 
     res = dict(res)
     print(res.get('UID'))
-    
+    print(event_uid)
     if (event_uid == res.get('UID')):
       return True
-    return False
+  return False
   
 def convert_datetime_format(input_datetime_str):
     input_format = "%Y-%m-%d %H:%M:%S%z"
@@ -86,6 +85,10 @@ def convert_datetime_format(input_datetime_str):
     output_datetime_str = dt.strftime(output_format)
 
     return output_datetime_str
-
+ 
+async def main():
+  t1 = asyncio.create_task(backend())
+  await asyncio.gather(t1)
+    
 if __name__ == "__main__":
-  backend()
+  asyncio.run(main())

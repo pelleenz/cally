@@ -5,6 +5,9 @@ charset-normalizer==3.3.2
 click==8.1.7
 DateTime==4.9
 Flask==3.0.3
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+greenlet==3.0.3
 httplib2==0.20.4
 icalendar==4.0.9
 icalevents==0.1.27
@@ -20,6 +23,8 @@ recurring-ical-events==2.0.2
 requests==2.31.0
 setuptools==69.2.0
 six==1.16.0
+SQLAlchemy==2.0.29
+typing_extensions==4.11.0
 tzlocal==5.2
 urllib3==2.2.1
 vobject==0.9.7
