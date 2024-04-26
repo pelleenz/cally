@@ -3,10 +3,9 @@ import os
 from datetime import datetime
 from icalevents.icalevents import events as ical_event
 import logging
-import asyncio
+import time
 
-async def backend():
-  print("backend started")
+def backend():
 
   environ = {}
   environ['ical_file_path'] = os.environ['ICS_PATH']
@@ -20,7 +19,7 @@ async def backend():
   while True:
     caldav_parser(ical_loader(environ), cal_finder(caldav_conn(environ), environ), environ)
     print("backend")
-    await asyncio.sleep(10)
+    time.sleep(10)
 
 def caldav_conn(environ):
   client =  caldav.DAVClient(url=environ['caldav_url'], username=environ['username'], password=environ['password'])
@@ -85,10 +84,3 @@ def convert_datetime_format(input_datetime_str):
     output_datetime_str = dt.strftime(output_format)
 
     return output_datetime_str
- 
-async def main():
-  t1 = asyncio.create_task(backend())
-  await asyncio.gather(t1)
-    
-if __name__ == "__main__":
-  asyncio.run(main())

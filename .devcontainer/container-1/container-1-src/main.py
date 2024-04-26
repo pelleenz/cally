@@ -1,15 +1,16 @@
 from backend.backend import backend
 from frontend.frontend import frontend
-import asyncio
+import threading
 
 
-async def main():
-  t1 = asyncio.create_task(backend())
-  print("t1")
-  t2 = asyncio.create_task(frontend())
-  print("t2")
-  await asyncio.gather(t1, t2)
+def main():
+  t2 = threading.Thread(target=backend)
+  # t1 = threading.Thread(target=frontend)
   
+  t2.start()
+  # t2.start()
+  
+  frontend()
 
 if __name__ == "__main__":
-  asyncio.run(main())
+  main()
