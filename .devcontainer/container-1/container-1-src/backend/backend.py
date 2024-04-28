@@ -9,11 +9,8 @@ def backend():
 
   while True:
 
-    config.client = caldav_conn(config.environ)
-
     caldav_parser(ical_loader(config.environ), cal_finder(caldav_conn(config.environ), config.environ), config.environ)
-    print("backend")
-    time.sleep(10)
+    time.sleep(3600)
 
 def caldav_conn(environ):
   client =  caldav.DAVClient(url=environ['caldav_url'], username=environ['username'], password=environ['password'])
@@ -28,16 +25,16 @@ def caldav_parser(ical_events, calendar, environ):
   
   for event in ical_events:
     event_summary = str(environ['prefix'] + event.summary)
-    event_start = event.start
-    event_end = event.end
-    event_uid = event.uid
-    print(event_uid)
-    duplicate = duplicate_check(calendar, event_uid)
-    
+    duplicate = duplicate_check(calendar, event)
+    if duplicate is True:
+      changed = mod_checker(calendar, event, environ)
+      if changed is True:
+        logging.info(f"event {event_summary} changed")
+        calendar.add_event(summary=event_summary, dtstart=event.start, dtend=event.end, uid=event.uid)
     if duplicate is False:
-      calendar.add_event(summary=event_summary, dtstart=event_start, dtend=event_end, uid=event_uid)
+      calendar.add_event(summary=event_summary, dtstart=event.start, dtend=event.end, uid=event.uid)
       logging.info(f"Event {event_summary} added to Calendar")
-    else:
+    elif changed is False:
       logging.info(f"Duplicate found, Event {event_summary} not added")
         
 def cal_finder(client, environ):
@@ -50,7 +47,7 @@ def cal_finder(client, environ):
   logging.error(f"Calendar {str(calendar)} not found")
   raise Exception("Calender not found on the server.")
 
-def duplicate_check(calendar, event_uid):
+def duplicate_check(calendar, ical_event):
   events_in_range = calendar.events()
   
   if len(events_in_range) == 0:
@@ -64,9 +61,7 @@ def duplicate_check(calendar, event_uid):
       if ':' in sub: 
         res.append(map(str.strip, sub.split(':', 1))) 
     res = dict(res)
-    print(res.get('UID'))
-    print(event_uid)
-    if (event_uid == res.get('UID')):
+    if (ical_event.uid == res.get('UID')):
       return True
   return False
   
@@ -78,3 +73,21 @@ def convert_datetime_format(input_datetime_str):
     output_datetime_str = dt.strftime(output_format)
 
     return output_datetime_str
+  
+def mod_checker(calendar, ical_event, environ):
+  events_in_range = calendar.events()
+  
+  if len(events_in_range) == 0:
+    return False
+  
+  for event in events_in_range:
+    event_data = event.data
+
+    res = [] 
+    for sub in event_data.split('\n'): 
+      if ':' in sub: 
+        res.append(map(str.strip, sub.split(':', 1))) 
+    res = dict(res)
+    if (str(environ['prefix'] + ical_event.summary) == res.get('SUMMARY')) and (convert_datetime_format(ical_event.start) == res.get('DTSTART;TZID=CEST;VALUE=DATE-TIME')) and (convert_datetime_format(ical_event.end) == res.get('DTEND;TZID=CEST;VALUE=DATE-TIME')):
+      return False
+  return True

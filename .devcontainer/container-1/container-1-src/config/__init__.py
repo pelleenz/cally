@@ -7,5 +7,3 @@ environ['username'] = os.environ['CALDAV_USER']
 environ['password'] = os.environ['CALDAV_PASS']
 environ['target_cal'] = os.environ['CALDAV_CALENDAR']
 environ['prefix'] = os.environ['CALDAV_PREFIX']
-
-client = None
