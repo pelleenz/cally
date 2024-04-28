@@ -1,23 +1,17 @@
 import caldav
-import os
 from datetime import datetime
 from icalevents.icalevents import events as ical_event
 import logging
 import time
+import config
 
 def backend():
 
-  environ = {}
-  environ['ical_file_path'] = os.environ['ICS_PATH']
-  environ['caldav_url'] = os.environ['CALDAV_URL']
-  environ['username'] = os.environ['CALDAV_USER']
-  environ['password'] = os.environ['CALDAV_PASS']
-  environ['target_cal'] = os.environ['CALDAV_CALENDAR']
-  environ['prefix'] = os.environ['CALDAV_PREFIX']
-
-  
   while True:
-    caldav_parser(ical_loader(environ), cal_finder(caldav_conn(environ), environ), environ)
+
+    config.client = caldav_conn(config.environ)
+
+    caldav_parser(ical_loader(config.environ), cal_finder(caldav_conn(config.environ), config.environ), config.environ)
     print("backend")
     time.sleep(10)
 

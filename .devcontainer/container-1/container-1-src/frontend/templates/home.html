@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Cally{% endblock %}
+{% block body%}
+<div> 
+  <div><h1>{{principal}}</h1></div>
+  <div> 
+    <div><h2>{{calendar}}</h2></div>
+    <div> 
+      {% for ev in events %}
+      <div><h3>{{ev}}</h3></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}

@@ -1,14 +1,7 @@
-import time
 from frontend import create_app
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import func
-from os import path
-from werkzeug.security import generate_password_hash, check_password_hash
-
-
-
+from flask import render_template
+import config
+import caldav
 
 def frontend():
    
@@ -16,8 +9,11 @@ def frontend():
   
   @app.route('/')
   def home():
-    return "HELLO"
-  
-  
-  
+    principal = config.client.principal()
+    calendars = principal.calendars()
+    for calendar in calendars: 
+      if str(calendar) == config.environ['target_cal']:
+        events = calendar.events()
+        return render_template("home.html", principal=principal, calendar=calendar, events=events)
+
   app.run(debug=True)
